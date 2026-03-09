@@ -1,16 +1,16 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #06090d;
-      --s1:       #0c1018;
-      --s2:       #131822;
-      --s3:       #1a2030;
-      --border:   rgba(100,160,255,0.08);
-      --accent:   #4f8cff;
-      --accent2:  #a78bfa;
-      --glow:     rgba(79,140,255,0.15);
-      --text:     #dde5f0;
-      --muted:    #5a6a80;
+      --bg:       #0b0b0f;
+      --s1:       #121317;
+      --s2:       #1b1c21;
+      --s3:       #25262d;
+      --border:   rgba(255,255,255,0.1);
+      --accent:   #8ab4f8;
+      --accent2:  #a98fff;
+      --glow:     rgba(138,180,248,0.25);
+      --text:     #e8eaed;
+      --muted:    #9aa0a6;
       --font:     'Syne', sans-serif;
       --mono:     'Fira Mono', monospace;
     }
@@ -21,7 +21,7 @@
     body::before {
       content: '';
       position: fixed; inset: 0; z-index: 0;
-      background-image: radial-gradient(circle, rgba(79,140,255,0.06) 1px, transparent 1px);
+      background-image: radial-gradient(circle, rgba(138,180,248,0.08) 1px, transparent 1px);
       background-size: 28px 28px;
       pointer-events: none;
     }
@@ -31,7 +31,7 @@
       content: '';
       position: fixed; top: -300px; left: 50%; transform: translateX(-50%);
       width: 900px; height: 600px;
-      background: radial-gradient(ellipse, rgba(79,140,255,0.07) 0%, transparent 65%);
+      background: radial-gradient(ellipse, rgba(138,180,248,0.12) 0%, transparent 65%);
       pointer-events: none; z-index: 0;
     }
 
@@ -39,7 +39,7 @@
     .banner {
       position: relative; z-index: 10;
       background: var(--s1);
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
       padding: 10px 28px;
       display: flex; align-items: center; justify-content: space-between;
     }
@@ -55,9 +55,13 @@
       background: var(--s2); border: 1px solid var(--border); border-radius: 7px;
       color: var(--text); text-decoration: none;
       font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.05em;
-      transition: border-color .2s, box-shadow .2s;
+      transition: border-color .2s, box-shadow .2s, background .2s;
     }
-    .gh-link:hover { border-color: rgba(79,140,255,0.3); box-shadow: 0 0 0 3px var(--glow); }
+    .gh-link:hover {
+      background: var(--s3);
+      border-color: rgba(138,180,248,0.35);
+      box-shadow: 0 0 0 3px var(--glow);
+    }
     .gh-link svg { width: 15px; height: 15px; fill: currentColor; }
 
     /* Page layout */
@@ -110,6 +114,7 @@
       overflow: hidden;
       margin-bottom: 28px;
       position: relative;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.45), 0 8px 20px rgba(0,0,0,0.25);
     }
 
     .preview-label {
@@ -148,6 +153,7 @@
       border-radius: 16px;
       padding: 28px 32px;
       margin-bottom: 24px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.45), 0 10px 26px rgba(0,0,0,0.22);
     }
 
     .controls-grid {
@@ -201,8 +207,8 @@
     input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
 
     select:focus, input:focus {
-      border-color: rgba(79,140,255,0.4);
-      box-shadow: 0 0 0 3px rgba(79,140,255,0.08);
+      border-color: rgba(138,180,248,0.6);
+      box-shadow: 0 0 0 3px rgba(138,180,248,0.2);
     }
 
     .color-pair {
@@ -235,8 +241,8 @@
     }
     .toggle-btn:hover { border-color: rgba(79,140,255,0.3); color: var(--text); }
     .toggle-btn.on {
-      background: rgba(79,140,255,0.1);
-      border-color: rgba(79,140,255,0.35);
+      background: rgba(138,180,248,0.16);
+      border-color: rgba(138,180,248,0.42);
       color: var(--accent);
     }
     .toggle-btn .dot {
@@ -252,7 +258,7 @@
       flex: 1;
       padding: 14px 24px;
       background: var(--accent);
-      color: white;
+      color: #202124;
       border: none; border-radius: 10px;
       font-family: var(--font); font-size: 14px; font-weight: 700;
       letter-spacing: 0.04em; cursor: pointer;
@@ -260,8 +266,8 @@
       text-transform: uppercase;
     }
     button.gen:hover {
-      background: #6fa3ff;
-      box-shadow: 0 4px 24px rgba(79,140,255,0.35);
+      background: #9abcf7;
+      box-shadow: 0 4px 20px rgba(138,180,248,0.38);
     }
     button.gen:active { transform: scale(0.98); }
 
@@ -284,6 +290,7 @@
       border-radius: 16px;
       padding: 24px;
       margin-bottom: 16px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.45), 0 8px 20px rgba(0,0,0,0.2);
     }
 
     .section-title {
@@ -350,7 +357,7 @@
       text-align: left;
     }
     .preset-btn:hover {
-      border-color: rgba(79,140,255,0.3);
+      border-color: rgba(138,180,248,0.42);
       transform: translateY(-2px);
     }
     .preset-thumb { height: 40px; }
