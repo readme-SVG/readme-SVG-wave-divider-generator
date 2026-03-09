@@ -77,11 +77,10 @@ async function generate() {
 
   document.getElementById('loading-bar').classList.add('active');
 
-  // Fetch inline SVG for preview updates
+  // Render preview exactly like README embeds via <img>
   try {
-    const resp = await fetch(url);
-    const svg = await resp.text();
-    document.getElementById('preview-wrap').innerHTML = svg;
+    const previewUrl = `${url}&_preview_ts=${Date.now()}`;
+    document.getElementById('preview-wrap').innerHTML = `<img src="${previewUrl}" alt="Wave preview" style="width:100%;height:auto;display:block;" />`;
   } catch(e) {}
 
   document.getElementById('loading-bar').classList.remove('active');
