@@ -51,6 +51,12 @@ def wave():
     opacity   = min(max(float(request.args.get("opacity", 1)), 0.1), 1)
     animate   = request.args.get("animate", "false").lower() == "true"
     speed     = min(max(float(request.args.get("speed", 6)), 1), 20)
+    text      = request.args.get("text", "")[:120]
+    text_color = "#" + request.args.get("text_color", "ffffff").lstrip("#")
+    text_size = min(max(int(request.args.get("text_size", 28)), 8), 180)
+    text_x    = min(max(float(request.args.get("text_x", 50)), 0), 100)
+    text_y    = min(max(float(request.args.get("text_y", 45)), 0), 100)
+    text_align = request.args.get("text_align", "middle").lower()
 
     svg = generate_wave_svg(
         wave_type=wave_type,
@@ -67,6 +73,12 @@ def wave():
         opacity=opacity,
         animate=animate,
         speed=speed,
+        text=text,
+        text_color=text_color,
+        text_size=text_size,
+        text_x=text_x,
+        text_y=text_y,
+        text_align=text_align,
     )
 
     return Response(

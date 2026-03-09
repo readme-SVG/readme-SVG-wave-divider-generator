@@ -231,6 +231,12 @@ def generate_wave_svg(
     animate: bool = False,
     speed: float = 6.0,
     smooth: bool = True,
+    text: str = "",
+    text_color: str = "#ffffff",
+    text_size: int = 28,
+    text_x: float = 50.0,
+    text_y: float = 45.0,
+    text_align: str = "middle",
 ) -> str:
     """
     Generate an SVG wave divider.
@@ -242,6 +248,11 @@ def generate_wave_svg(
     layers = min(max(layers, 1), 3)
     opacity = min(max(opacity, 0.1), 1.0)
     speed = min(max(speed, 1.0), 20.0)
+    text_size = min(max(int(text_size), 8), 180)
+    text_x = min(max(float(text_x), 0.0), 100.0)
+    text_y = min(max(float(text_y), 0.0), 100.0)
+    text_align = text_align if text_align in ("start", "middle", "end") else "middle"
+    text = text.strip()
 
     r1, g1, b1 = _hex_to_rgb(color_top)
     r2, g2, b2 = _hex_to_rgb(color_bottom)
@@ -466,6 +477,15 @@ def generate_wave_svg(
             f'{mirror_anim}</path>\n'
         )
 
+    text_svg = ""
+    if text:
+        text_svg = (
+            f'  <text x="{(width * text_x / 100):.2f}" y="{(height * text_y / 100):.2f}" '
+            f'fill="{_esc(text_color)}" font-size="{text_size}" text-anchor="{text_align}" '
+            f'font-family="Inter,Segoe UI,Roboto,Arial,sans-serif" dominant-baseline="middle">'
+            f'{_esc(text)}</text>\n'
+        )
+
     return f"""<svg xmlns="http://www.w3.org/2000/svg"
      viewBox="0 0 {width} {height}" width="{width}" height="{height}"
      preserveAspectRatio="none"
@@ -473,4 +493,5 @@ def generate_wave_svg(
 {defs}
   <g>
 {paths_svg}  </g>
+{text_svg}
 </svg>"""
