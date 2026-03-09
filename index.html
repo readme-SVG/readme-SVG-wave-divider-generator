@@ -120,15 +120,28 @@
       </div>
 
       <div class="ctrl">
-        <label>Overlay Text</label>
-        <input type="text" id="text_content" value="" placeholder="Type text over the wave" maxlength="120"/>
+        <label>Top Text</label>
+        <input type="text" id="text_content" value="" placeholder="Top text" maxlength="120"/>
       </div>
 
       <div class="ctrl">
-        <label>Text Color</label>
+        <label>Bottom Text</label>
+        <input type="text" id="text_bottom_content" value="" placeholder="Bottom text" maxlength="120"/>
+      </div>
+
+      <div class="ctrl">
+        <label>Top Text Color</label>
         <div class="color-pair">
           <input type="color" id="text_color_picker" value="#ffffff"/>
           <input type="text" id="text_color" value="#ffffff"/>
+        </div>
+      </div>
+
+      <div class="ctrl">
+        <label>Bottom Text Color</label>
+        <div class="color-pair">
+          <input type="color" id="text_bottom_color_picker" value="#a5b4fc"/>
+          <input type="text" id="text_bottom_color" value="#a5b4fc"/>
         </div>
       </div>
 
@@ -146,8 +159,13 @@
       </div>
 
       <div class="ctrl">
-        <label>Text Size (px)</label>
+        <label>Top Text Size (px)</label>
         <input type="number" id="text_size" value="28" min="8" max="180"/>
+      </div>
+
+      <div class="ctrl">
+        <label>Bottom Text Size (px)</label>
+        <input type="number" id="text_bottom_size" value="22" min="8" max="180"/>
       </div>
 
       <div class="ctrl">
@@ -178,6 +196,11 @@
       <div class="ctrl">
         <label>Text Y Position (%)</label>
         <input type="number" id="text_y" value="45" min="0" max="100"/>
+      </div>
+
+      <div class="ctrl">
+        <label>Text Gap (px)</label>
+        <input type="number" id="text_gap" value="26" min="0" max="200"/>
       </div>
 
       <div class="ctrl">

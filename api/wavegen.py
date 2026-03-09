@@ -232,8 +232,11 @@ def generate_wave_svg(
     speed: float = 6.0,
     smooth: bool = True,
     text: str = "",
+    text_bottom: str = "",
     text_color: str = "#ffffff",
+    text_bottom_color: str = "#a5b4fc",
     text_size: int = 28,
+    text_bottom_size: int = 22,
     text_style: str = "normal",
     text_stroke_color: str = "#000000",
     text_stroke_width: float = 0.0,
@@ -241,6 +244,7 @@ def generate_wave_svg(
     text_scale_y: float = 100.0,
     text_x: float = 50.0,
     text_y: float = 45.0,
+    text_gap: float = 26.0,
     text_align: str = "middle",
 ) -> str:
     """
@@ -254,14 +258,17 @@ def generate_wave_svg(
     opacity = min(max(opacity, 0.1), 1.0)
     speed = min(max(speed, 1.0), 20.0)
     text_size = min(max(int(text_size), 8), 180)
+    text_bottom_size = min(max(int(text_bottom_size), 8), 180)
     text_scale_x = min(max(float(text_scale_x), 50.0), 200.0)
     text_scale_y = min(max(float(text_scale_y), 50.0), 200.0)
     text_x = min(max(float(text_x), 0.0), 100.0)
     text_y = min(max(float(text_y), 0.0), 100.0)
+    text_gap = min(max(float(text_gap), 0.0), 200.0)
     text_align = text_align if text_align in ("start", "middle", "end") else "middle"
     text_style = text_style if text_style in ("normal", "bold", "italic", "bold_italic") else "normal"
     text_stroke_width = min(max(float(text_stroke_width), 0.0), 20.0)
     text = text.strip()
+    text_bottom = text_bottom.strip()
 
     r1, g1, b1 = _hex_to_rgb(color_top)
     r2, g2, b2 = _hex_to_rgb(color_bottom)
@@ -487,22 +494,34 @@ def generate_wave_svg(
         )
 
     text_svg = ""
-    if text:
+    if text or text_bottom:
         font_weight = "700" if text_style in ("bold", "bold_italic") else "400"
         font_style = "italic" if text_style in ("italic", "bold_italic") else "normal"
         text_pos_x = width * text_x / 100
         text_pos_y = height * text_y / 100
+        text_bottom_pos_y = text_pos_y + text_gap
         scale_x = text_scale_x / 100
         scale_y = text_scale_y / 100
-        text_svg = (
-            f'  <text x="0" y="0" transform="translate({text_pos_x:.2f} {text_pos_y:.2f}) scale({scale_x:.2f} {scale_y:.2f})" '
-            f'fill="{_esc(text_color)}" font-size="{text_size}" text-anchor="{text_align}" '
-            f'font-weight="{font_weight}" font-style="{font_style}" '
-            f'font-family="Inter,Segoe UI,Roboto,Arial,sans-serif" dominant-baseline="middle" '
-            f'stroke="{_esc(text_stroke_color)}" stroke-width="{text_stroke_width:.2f}" '
-            f'paint-order="stroke fill">'
-            f'{_esc(text)}</text>\n'
-        )
+        if text:
+            text_svg += (
+                f'  <text x="0" y="0" transform="translate({text_pos_x:.2f} {text_pos_y:.2f}) scale({scale_x:.2f} {scale_y:.2f})" '
+                f'fill="{_esc(text_color)}" font-size="{text_size}" text-anchor="{text_align}" '
+                f'font-weight="{font_weight}" font-style="{font_style}" '
+                f'font-family="Inter,Segoe UI,Roboto,Arial,sans-serif" dominant-baseline="middle" '
+                f'stroke="{_esc(text_stroke_color)}" stroke-width="{text_stroke_width:.2f}" '
+                f'paint-order="stroke fill">'
+                f'{_esc(text)}</text>\n'
+            )
+        if text_bottom:
+            text_svg += (
+                f'  <text x="0" y="0" transform="translate({text_pos_x:.2f} {text_bottom_pos_y:.2f}) scale({scale_x:.2f} {scale_y:.2f})" '
+                f'fill="{_esc(text_bottom_color)}" font-size="{text_bottom_size}" text-anchor="{text_align}" '
+                f'font-weight="{font_weight}" font-style="{font_style}" '
+                f'font-family="Inter,Segoe UI,Roboto,Arial,sans-serif" dominant-baseline="middle" '
+                f'stroke="{_esc(text_stroke_color)}" stroke-width="{text_stroke_width:.2f}" '
+                f'paint-order="stroke fill">'
+                f'{_esc(text_bottom)}</text>\n'
+            )
 
     return f"""<svg xmlns="http://www.w3.org/2000/svg"
      viewBox="0 0 {width} {height}" width="{width}" height="{height}"

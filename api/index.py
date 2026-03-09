@@ -52,8 +52,11 @@ def wave():
     animate   = request.args.get("animate", "false").lower() == "true"
     speed     = min(max(float(request.args.get("speed", 6)), 1), 20)
     text      = request.args.get("text", "")[:120]
+    text_bottom = request.args.get("text_bottom", "")[:120]
     text_color = "#" + request.args.get("text_color", "ffffff").lstrip("#")
+    text_bottom_color = "#" + request.args.get("text_bottom_color", "a5b4fc").lstrip("#")
     text_size = min(max(int(request.args.get("text_size", 28)), 8), 180)
+    text_bottom_size = min(max(int(request.args.get("text_bottom_size", 22)), 8), 180)
     text_style = request.args.get("text_style", "normal").lower()
     text_stroke_color = "#" + request.args.get("text_stroke_color", "000000").lstrip("#")
     text_stroke_width = min(max(float(request.args.get("text_stroke_width", 0)), 0), 20)
@@ -61,6 +64,7 @@ def wave():
     text_scale_y = min(max(float(request.args.get("text_scale_y", 100)), 50), 200)
     text_x    = min(max(float(request.args.get("text_x", 50)), 0), 100)
     text_y    = min(max(float(request.args.get("text_y", 45)), 0), 100)
+    text_gap  = min(max(float(request.args.get("text_gap", 26)), 0), 200)
     text_align = request.args.get("text_align", "middle").lower()
 
     svg = generate_wave_svg(
@@ -79,8 +83,11 @@ def wave():
         animate=animate,
         speed=speed,
         text=text,
+        text_bottom=text_bottom,
         text_color=text_color,
+        text_bottom_color=text_bottom_color,
         text_size=text_size,
+        text_bottom_size=text_bottom_size,
         text_style=text_style,
         text_stroke_color=text_stroke_color,
         text_stroke_width=text_stroke_width,
@@ -88,6 +95,7 @@ def wave():
         text_scale_y=text_scale_y,
         text_x=text_x,
         text_y=text_y,
+        text_gap=text_gap,
         text_align=text_align,
     )
 
