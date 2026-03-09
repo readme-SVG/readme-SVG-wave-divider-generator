@@ -234,6 +234,9 @@ def generate_wave_svg(
     text: str = "",
     text_color: str = "#ffffff",
     text_size: int = 28,
+    text_style: str = "normal",
+    text_scale_x: float = 100.0,
+    text_scale_y: float = 100.0,
     text_x: float = 50.0,
     text_y: float = 45.0,
     text_align: str = "middle",
@@ -249,9 +252,12 @@ def generate_wave_svg(
     opacity = min(max(opacity, 0.1), 1.0)
     speed = min(max(speed, 1.0), 20.0)
     text_size = min(max(int(text_size), 8), 180)
+    text_scale_x = min(max(float(text_scale_x), 50.0), 200.0)
+    text_scale_y = min(max(float(text_scale_y), 50.0), 200.0)
     text_x = min(max(float(text_x), 0.0), 100.0)
     text_y = min(max(float(text_y), 0.0), 100.0)
     text_align = text_align if text_align in ("start", "middle", "end") else "middle"
+    text_style = text_style if text_style in ("normal", "bold", "italic", "bold_italic") else "normal"
     text = text.strip()
 
     r1, g1, b1 = _hex_to_rgb(color_top)
@@ -479,9 +485,16 @@ def generate_wave_svg(
 
     text_svg = ""
     if text:
+        font_weight = "700" if text_style in ("bold", "bold_italic") else "400"
+        font_style = "italic" if text_style in ("italic", "bold_italic") else "normal"
+        text_pos_x = width * text_x / 100
+        text_pos_y = height * text_y / 100
+        scale_x = text_scale_x / 100
+        scale_y = text_scale_y / 100
         text_svg = (
-            f'  <text x="{(width * text_x / 100):.2f}" y="{(height * text_y / 100):.2f}" '
+            f'  <text x="0" y="0" transform="translate({text_pos_x:.2f} {text_pos_y:.2f}) scale({scale_x:.2f} {scale_y:.2f})" '
             f'fill="{_esc(text_color)}" font-size="{text_size}" text-anchor="{text_align}" '
+            f'font-weight="{font_weight}" font-style="{font_style}" '
             f'font-family="Inter,Segoe UI,Roboto,Arial,sans-serif" dominant-baseline="middle">'
             f'{_esc(text)}</text>\n'
         )
