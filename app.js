@@ -17,6 +17,7 @@ function syncColor(pickerId, textId) {
 syncColor('color_top_picker', 'color_top');
 syncColor('color_bottom_picker', 'color_bottom');
 syncColor('text_color_picker', 'text_color');
+syncColor('text_stroke_color_picker', 'text_stroke_color');
 
 // Toggle controls
 function toggle(key, el) {
@@ -32,7 +33,7 @@ function debounce() {
   debTimer = setTimeout(generate, 300);
 }
 
-['type','position','width','height','amplitude','frequency','layers','opacity','speed','text_content','text_size','text_style','text_scale_x','text_scale_y','text_x','text_y','text_align'].forEach(id => {
+['type','position','width','height','amplitude','frequency','layers','opacity','speed','text_content','text_size','text_style','text_scale_x','text_scale_y','text_x','text_y','text_align','text_stroke_width'].forEach(id => {
   document.getElementById(id).addEventListener('change', debounce);
   document.getElementById(id).addEventListener('input', debounce);
 });
@@ -62,6 +63,8 @@ async function generate() {
     text_color:   document.getElementById('text_color').value.replace('#',''),
     text_size:    document.getElementById('text_size').value,
     text_style:   document.getElementById('text_style').value,
+    text_stroke_color: document.getElementById('text_stroke_color').value.replace('#',''),
+    text_stroke_width: document.getElementById('text_stroke_width').value,
     text_scale_x: document.getElementById('text_scale_x').value,
     text_scale_y: document.getElementById('text_scale_y').value,
     text_x:       document.getElementById('text_x').value,

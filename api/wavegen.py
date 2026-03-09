@@ -235,6 +235,8 @@ def generate_wave_svg(
     text_color: str = "#ffffff",
     text_size: int = 28,
     text_style: str = "normal",
+    text_stroke_color: str = "#000000",
+    text_stroke_width: float = 0.0,
     text_scale_x: float = 100.0,
     text_scale_y: float = 100.0,
     text_x: float = 50.0,
@@ -258,6 +260,7 @@ def generate_wave_svg(
     text_y = min(max(float(text_y), 0.0), 100.0)
     text_align = text_align if text_align in ("start", "middle", "end") else "middle"
     text_style = text_style if text_style in ("normal", "bold", "italic", "bold_italic") else "normal"
+    text_stroke_width = min(max(float(text_stroke_width), 0.0), 20.0)
     text = text.strip()
 
     r1, g1, b1 = _hex_to_rgb(color_top)
@@ -495,7 +498,9 @@ def generate_wave_svg(
             f'  <text x="0" y="0" transform="translate({text_pos_x:.2f} {text_pos_y:.2f}) scale({scale_x:.2f} {scale_y:.2f})" '
             f'fill="{_esc(text_color)}" font-size="{text_size}" text-anchor="{text_align}" '
             f'font-weight="{font_weight}" font-style="{font_style}" '
-            f'font-family="Inter,Segoe UI,Roboto,Arial,sans-serif" dominant-baseline="middle">'
+            f'font-family="Inter,Segoe UI,Roboto,Arial,sans-serif" dominant-baseline="middle" '
+            f'stroke="{_esc(text_stroke_color)}" stroke-width="{text_stroke_width:.2f}" '
+            f'paint-order="stroke fill">'
             f'{_esc(text)}</text>\n'
         )
 

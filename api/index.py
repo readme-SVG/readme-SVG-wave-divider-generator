@@ -55,6 +55,8 @@ def wave():
     text_color = "#" + request.args.get("text_color", "ffffff").lstrip("#")
     text_size = min(max(int(request.args.get("text_size", 28)), 8), 180)
     text_style = request.args.get("text_style", "normal").lower()
+    text_stroke_color = "#" + request.args.get("text_stroke_color", "000000").lstrip("#")
+    text_stroke_width = min(max(float(request.args.get("text_stroke_width", 0)), 0), 20)
     text_scale_x = min(max(float(request.args.get("text_scale_x", 100)), 50), 200)
     text_scale_y = min(max(float(request.args.get("text_scale_y", 100)), 50), 200)
     text_x    = min(max(float(request.args.get("text_x", 50)), 0), 100)
@@ -80,6 +82,8 @@ def wave():
         text_color=text_color,
         text_size=text_size,
         text_style=text_style,
+        text_stroke_color=text_stroke_color,
+        text_stroke_width=text_stroke_width,
         text_scale_x=text_scale_x,
         text_scale_y=text_scale_y,
         text_x=text_x,
