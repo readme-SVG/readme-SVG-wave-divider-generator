@@ -31,6 +31,7 @@ def _build_wave_path(
     points: int = 100,
     fill_bottom: bool = True,
     y_offset: float = 0.5,
+    inverted: bool = False,
 ) -> str:
     """
     Build an SVG path for a sine-based wave.
@@ -41,7 +42,8 @@ def _build_wave_path(
     coords = []
     for i in range(points + 1):
         x = (i / points) * width
-        y = mid_y + amplitude * math.sin(2 * math.pi * frequency * (i / points) + phase)
+        direction = -1 if inverted else 1
+        y = mid_y + direction * amplitude * math.sin(2 * math.pi * frequency * (i / points) + phase)
         coords.append((x, y))
 
     path = f"M {coords[0][0]:.2f} {coords[0][1]:.2f} "
@@ -64,6 +66,7 @@ def _build_smooth_wave_path(
     points: int = 60,
     fill_bottom: bool = True,
     y_offset: float = 0.5,
+    inverted: bool = False,
 ) -> str:
     """Smooth cubic bezier wave path."""
     mid_y = height * y_offset
@@ -72,7 +75,8 @@ def _build_smooth_wave_path(
     coords = []
     for i in range(points + 1):
         x = i * step
-        y = mid_y + amplitude * math.sin(2 * math.pi * frequency * (i / points) + phase)
+        direction = -1 if inverted else 1
+        y = mid_y + direction * amplitude * math.sin(2 * math.pi * frequency * (i / points) + phase)
         coords.append((x, y))
 
     path = f"M {coords[0][0]:.2f} {coords[0][1]:.2f} "
@@ -97,6 +101,7 @@ def _build_zigzag_path(
     frequency: float,
     fill_bottom: bool = True,
     y_offset: float = 0.5,
+    inverted: bool = False,
 ) -> str:
     mid_y = height * y_offset
     peaks = max(2, int(frequency * 12))
@@ -105,7 +110,7 @@ def _build_zigzag_path(
     points = []
     for i in range(peaks + 1):
         x = i * step
-        y = mid_y + (amplitude if i % 2 == 0 else -amplitude)
+        y = mid_y + (-amplitude if i % 2 == 0 else amplitude) if inverted else mid_y + (amplitude if i % 2 == 0 else -amplitude)
         points.append((x, y))
 
     path = f"M {points[0][0]:.2f} {points[0][1]:.2f} "
@@ -158,6 +163,7 @@ def _build_animated_wave_values(
     fill_bottom: bool,
     base_phase: float,
     frame_count: int = 5,
+    **kwargs,
 ) -> str:
     """Build semicolon-separated animated path values for a wave-like morph."""
     values = []
@@ -173,6 +179,7 @@ def _build_animated_wave_values(
                 phase=phase,
                 fill_bottom=fill_bottom,
                 y_offset=0.5,
+                **kwargs,
             )
         )
     return ";".join(values)
@@ -280,6 +287,7 @@ def generate_wave_svg(
                 phase=phase_offset,
                 fill_bottom=fill_bottom_flag,
                 y_offset=0.5,
+                inverted=flip,
             )
         elif wave_type == "smooth":
             path_d = _build_smooth_wave_path(
@@ -287,12 +295,14 @@ def generate_wave_svg(
                 phase=phase_offset,
                 fill_bottom=fill_bottom_flag,
                 y_offset=0.5,
+                inverted=flip,
             )
         elif wave_type == "zigzag":
             path_d = _build_zigzag_path(
                 width, height, layer_amp, frequency,
                 fill_bottom=fill_bottom_flag,
                 y_offset=0.5,
+                inverted=flip,
             )
         elif wave_type == "bump":
             path_d = _build_bump_path(
@@ -328,6 +338,7 @@ def generate_wave_svg(
                     frequency,
                     fill_bottom_flag,
                     phase_offset,
+                    inverted=flip,
                 )
                 animation_svg = (
                     f'<animate attributeName="d" values="{anim_values}" '
@@ -341,6 +352,7 @@ def generate_wave_svg(
                     layer_amp,
                     frequency,
                     fill_bottom_flag,
+                    inverted=flip,
                 )
                 animation_svg = (
                     f'<animate attributeName="d" values="{anim_values}" '
@@ -384,6 +396,7 @@ def generate_wave_svg(
                 phase=math.pi,
                 fill_bottom=not flip,
                 y_offset=0.5,
+                inverted=flip,
             )
         else:
             mirror_path = _build_smooth_wave_path(
@@ -391,6 +404,7 @@ def generate_wave_svg(
                 phase=math.pi,
                 fill_bottom=not flip,
                 y_offset=0.5,
+                inverted=flip,
             )
         mirror_anim = ""
         if animate:
@@ -404,6 +418,7 @@ def generate_wave_svg(
                     frequency,
                     not flip,
                     math.pi,
+                    inverted=flip,
                 )
                 mirror_anim = (
                     f'<animate attributeName="d" values="{mirror_values}" '
@@ -417,6 +432,7 @@ def generate_wave_svg(
                     amplitude,
                     frequency,
                     not flip,
+                    inverted=flip,
                 )
                 mirror_anim = (
                     f'<animate attributeName="d" values="{mirror_values}" '
@@ -450,13 +466,11 @@ def generate_wave_svg(
             f'{mirror_anim}</path>\n'
         )
 
-    transform = f' transform="scale(1,-1) translate(0,-{height})"' if flip else ""
-
     return f"""<svg xmlns="http://www.w3.org/2000/svg"
      viewBox="0 0 {width} {height}" width="{width}" height="{height}"
      preserveAspectRatio="none"
      role="img" aria-label="Wave divider">
 {defs}
-  <g{transform}>
+  <g>
 {paths_svg}  </g>
 </svg>"""
