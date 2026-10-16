@@ -1,3 +1,4 @@
+import math
 import os
 import re
 import sys
@@ -36,6 +37,8 @@ def _parse_float_arg(name: str, default: float, min_value: float, max_value: flo
         value = float(raw) if raw is not None else default
     except (TypeError, ValueError):
         value = default
+    if not isinstance(value, (int, float)) or not math.isfinite(value):
+        value = default
     return min(max(value, min_value), max_value)
 
 
@@ -43,7 +46,9 @@ def _parse_color_arg(name: str, default: str) -> str:
     raw = request.args.get(name)
     if not raw:
         return default
-    normalized = raw.strip().lstrip("#")
+    normalized = raw.strip()
+    if normalized.startswith("#"):
+        normalized = normalized[1:]
     if HEX_COLOR_RE.fullmatch(normalized):
         return f"#{normalized.lower()}"
     return default
@@ -103,7 +108,7 @@ def wave():
     text_bottom_color = _parse_color_arg("text_bottom_color", "#a5b4fc")
     text_size = _parse_int_arg("text_size", 28, 8, 180)
     text_bottom_size = _parse_int_arg("text_bottom_size", 22, 8, 180)
-    text_style = _parse_enum_arg("text_style", "normal", {"normal", "italic", "bold", "bolditalic"})
+    text_style = _parse_enum_arg("text_style", "normal", {"normal", "italic", "bold", "bold_italic"})
     text_stroke_color = _parse_color_arg("text_stroke_color", "#000000")
     text_stroke_width = _parse_float_arg("text_stroke_width", 0.0, 0.0, 20.0)
     text_scale_x = _parse_float_arg("text_scale_x", 100.0, 50.0, 200.0)
@@ -151,5 +156,6 @@ def wave():
         headers={
             "Cache-Control": "public, max-age=3600",
             "Access-Control-Allow-Origin": "*",
+            "X-Content-Type-Options": "nosniff",
         },
     )

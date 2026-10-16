@@ -85,7 +85,15 @@ async function generate() {
   // Render preview exactly like README embeds via <img>
   try {
     const previewUrl = `${url}&_preview_ts=${Date.now()}`;
-    document.getElementById('preview-wrap').innerHTML = `<img src="${previewUrl}" alt="Wave preview" style="width:100%;height:auto;display:block;" />`;
+    const wrap = document.getElementById('preview-wrap');
+    wrap.textContent = '';
+    const img = document.createElement('img');
+    img.src = previewUrl;
+    img.alt = 'Wave preview';
+    img.style.width = '100%';
+    img.style.height = 'auto';
+    img.style.display = 'block';
+    wrap.appendChild(img);
   } catch(e) {}
 
   document.getElementById('loading-bar').classList.remove('active');
@@ -114,12 +122,33 @@ function setTab(tab, btn) {
   updateCode();
 }
 
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.style.position = 'fixed';
+  ta.style.top = '0';
+  ta.style.left = '0';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(ta);
+}
+
 function copyCode() {
-  navigator.clipboard.writeText(document.getElementById('code-out').textContent).then(() => {
+  const text = document.getElementById('code-out').textContent;
+  const done = () => {
     const b = document.getElementById('copy-btn');
     b.textContent = '✓ Copied'; b.classList.add('ok');
     setTimeout(() => { b.textContent = 'Copy'; b.classList.remove('ok'); }, 2000);
-  });
+  };
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    navigator.clipboard.writeText(text).then(done).catch(() => { fallbackCopy(text); done(); });
+  } else {
+    fallbackCopy(text);
+    done();
+  }
 }
 
 // Preset generation
@@ -131,6 +160,7 @@ const PRESET_PALETTES = [
 ];
 
 function randomBetween(min, max, step = 1) {
+  if (!step || step <= 0) step = 1;
   const count = Math.round((max - min) / step);
   return min + Math.floor(Math.random() * (count + 1)) * step;
 }
@@ -157,11 +187,17 @@ function buildRandomPresets(count = 4) {
   return presets;
 }
 
+function safeHexColor(value, fallback) {
+  return /^#[0-9a-fA-F]{3,6}$/.test(value) ? value : fallback;
+}
+
 function buildPreviewSVG(p) {
   const w = 300, h = 40;
   const amp = p.amp * (h / 80);
   const freq = p.freq;
   const mid = h / 2;
+  const ct = safeHexColor(p.ct, '#0d1117');
+  const cb = safeHexColor(p.cb, '#161b22');
   let path = `M 0 ${mid} `;
   const pts = 60;
   for (let i = 1; i <= pts; i++) {
@@ -175,8 +211,8 @@ function buildPreviewSVG(p) {
   path += `L ${w} ${h} L 0 ${h} Z`;
   const transform = p.flip ? `transform="scale(1,-1) translate(0,-${h})"` : '';
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="width:100%;height:40px">
-    <rect width="${w}" height="${h}" fill="${p.ct}"/>
-    <path d="${path}" fill="${p.cb}" ${transform}/>
+    <rect width="${w}" height="${h}" fill="${ct}"/>
+    <path d="${path}" fill="${cb}" ${transform}/>
   </svg>`;
 }
 

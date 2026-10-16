@@ -60,10 +60,18 @@ gh_token = os.environ.get("GITHUB_TOKEN")
 model_token = os.environ.get("GH_MODELS_TOKEN")
 repo_name = os.environ.get("REPOSITORY")
 event_name = os.environ.get("EVENT_NAME")
-allowed_users = [u.strip().lower() for u in os.environ.get("ALLOWED_USER", "").split(",")]
+allowed_users = [u.strip().lower() for u in os.environ.get("ALLOWED_USER", "").split(",") if u.strip()]
 
 MODEL_NAME = "Llama-3.3-70B-Instruct"
 ENDPOINT = "https://models.inference.ai.azure.com/chat/completions"
+
+# Validate required configuration before authenticating.
+if not gh_token or not repo_name:
+    print("Missing required environment variables (GITHUB_TOKEN/REPOSITORY). Skipping.")
+    exit(0)
+if not model_token:
+    print("Missing GH_MODELS_TOKEN. Skipping.")
+    exit(0)
 
 # Authenticate once; the ``repo`` object is reused throughout.
 auth = Auth.Token(gh_token)
@@ -86,6 +94,9 @@ changed_files = []
 # ---------------------------------------------------------------------------
 if event_name == "push":
     commit_sha = os.environ.get("COMMIT_SHA")
+    if not commit_sha:
+        print("Missing COMMIT_SHA for push event. Skipping.")
+        exit(0)
     commit = repo.get_commit(commit_sha)
 
     actor_login = os.environ.get("GITHUB_ACTOR", "").strip().lower()
@@ -110,7 +121,11 @@ if event_name == "push":
             break
 
 elif event_name == "pull_request":
-    pr_number = int(os.environ.get("PR_NUMBER"))
+    try:
+        pr_number = int(os.environ.get("PR_NUMBER"))
+    except (TypeError, ValueError):
+        print("Invalid PR_NUMBER for pull_request event. Skipping.")
+        exit(0)
     pr = repo.get_pull(pr_number)
     author_login = pr.user.login.strip().lower()
     if author_login not in allowed_users:
