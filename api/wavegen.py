@@ -1,8 +1,10 @@
 import math
-import random
 
 
-def _esc(text: str) -> str:
+def _esc(text) -> str:
+    if text is None:
+        return ""
+    text = str(text)
     return (
         text.replace("&", "&amp;")
             .replace("<", "&lt;")
@@ -79,19 +81,19 @@ def _build_smooth_wave_path(
         y = mid_y + direction * amplitude * math.sin(2 * math.pi * frequency * (i / points) + phase)
         coords.append((x, y))
 
-    path = f"M {coords[0][0]:.2f} {coords[0][1]:.2f} "
+    parts = [f"M {coords[0][0]:.2f} {coords[0][1]:.2f} "]
     for i in range(1, len(coords)):
         x0, y0 = coords[i - 1]
         x1, y1 = coords[i]
         cx = (x0 + x1) / 2
-        path += f"C {cx:.2f} {y0:.2f} {cx:.2f} {y1:.2f} {x1:.2f} {y1:.2f} "
+        parts.append(f"C {cx:.2f} {y0:.2f} {cx:.2f} {y1:.2f} {x1:.2f} {y1:.2f} ")
 
     if fill_bottom:
-        path += f"L {width} {height} L 0 {height} Z"
+        parts.append(f"L {width} {height} L 0 {height} Z")
     else:
-        path += f"L {width} 0 L 0 0 Z"
+        parts.append(f"L {width} 0 L 0 0 Z")
 
-    return path
+    return "".join(parts)
 
 
 def _build_zigzag_path(
@@ -113,13 +115,13 @@ def _build_zigzag_path(
         y = mid_y + (-amplitude if i % 2 == 0 else amplitude) if inverted else mid_y + (amplitude if i % 2 == 0 else -amplitude)
         points.append((x, y))
 
-    path = f"M {points[0][0]:.2f} {points[0][1]:.2f} "
-    path += " ".join(f"L {x:.2f} {y:.2f}" for x, y in points[1:])
+    parts = [f"M {points[0][0]:.2f} {points[0][1]:.2f} "]
+    parts.append(" ".join(f"L {x:.2f} {y:.2f}" for x, y in points[1:]))
     if fill_bottom:
-        path += f" L {width} {height} L 0 {height} Z"
+        parts.append(f" L {width} {height} L 0 {height} Z")
     else:
-        path += f" L {width} 0 L 0 0 Z"
-    return path
+        parts.append(f" L {width} 0 L 0 0 Z")
+    return "".join(parts)
 
 
 def _build_bump_path(
@@ -135,23 +137,20 @@ def _build_bump_path(
     bumps = max(1, int(frequency * 6))
     bw = width / bumps
 
-    if inverted:
-        mid_y = height * y_offset
-
-    path = f"M 0 {mid_y:.2f} "
+    parts = [f"M 0 {mid_y:.2f} "]
     for i in range(bumps):
         x0 = i * bw
         x1 = x0 + bw / 2
         x2 = x0 + bw
         cy = mid_y - amplitude if not inverted else mid_y + amplitude
-        path += f"C {x0:.2f} {mid_y:.2f} {x1 - bw * 0.1:.2f} {cy:.2f} {x1:.2f} {cy:.2f} "
-        path += f"C {x1 + bw * 0.1:.2f} {cy:.2f} {x2:.2f} {mid_y:.2f} {x2:.2f} {mid_y:.2f} "
+        parts.append(f"C {x0:.2f} {mid_y:.2f} {x1 - bw * 0.1:.2f} {cy:.2f} {x1:.2f} {cy:.2f} ")
+        parts.append(f"C {x1 + bw * 0.1:.2f} {cy:.2f} {x2:.2f} {mid_y:.2f} {x2:.2f} {mid_y:.2f} ")
 
     if fill_bottom:
-        path += f"L {width} {height} L 0 {height} Z"
+        parts.append(f"L {width} {height} L 0 {height} Z")
     else:
-        path += f"L {width} 0 L 0 0 Z"
-    return path
+        parts.append(f"L {width} 0 L 0 0 Z")
+    return "".join(parts)
 
 
 def _build_animated_wave_values(
@@ -166,6 +165,8 @@ def _build_animated_wave_values(
     **kwargs,
 ) -> str:
     """Build semicolon-separated animated path values for a wave-like morph."""
+    if frame_count < 2:
+        frame_count = 2
     values = []
     for frame in range(frame_count):
         # full cycle split across N-1 steps; last frame equals first for seamless loop
@@ -197,6 +198,8 @@ def _build_animated_amplitude_values(
     **kwargs,
 ) -> str:
     """Build animated path values by pulsating amplitude (for non-phase wave types)."""
+    if frame_count < 2:
+        frame_count = 2
     values = []
     for frame in range(frame_count):
         phase = 2 * math.pi * frame / (frame_count - 1)
@@ -213,6 +216,25 @@ def _build_animated_amplitude_values(
             )
         )
     return ";".join(values)
+
+
+def _coerce_float(value, default: float) -> float:
+    """Coerce a value to a finite float, falling back to default."""
+    try:
+        value = float(value)
+    except (TypeError, ValueError):
+        return default
+    if not math.isfinite(value):
+        return default
+    return value
+
+
+def _coerce_int(value, default: int) -> int:
+    """Coerce a value to an int, falling back to default."""
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
 
 
 def generate_wave_svg(
@@ -252,21 +274,44 @@ def generate_wave_svg(
 
     wave_type: sine | smooth | zigzag | bump | triangle
     """
+    width = _coerce_int(width, 1200)
+    height = _coerce_int(height, 80)
+    amplitude = _coerce_float(amplitude, 20.0)
+    frequency = _coerce_float(frequency, 1.0)
+    layers = _coerce_int(layers, 1)
+    opacity = _coerce_float(opacity, 1.0)
+    speed = _coerce_float(speed, 6.0)
+    text_size = _coerce_int(text_size, 28)
+    text_bottom_size = _coerce_int(text_bottom_size, 22)
+    text_scale_x = _coerce_float(text_scale_x, 100.0)
+    text_scale_y = _coerce_float(text_scale_y, 100.0)
+    text_x = _coerce_float(text_x, 50.0)
+    text_y = _coerce_float(text_y, 45.0)
+    text_gap = _coerce_float(text_gap, 26.0)
+    text_stroke_width = _coerce_float(text_stroke_width, 0.0)
+
     amplitude = min(max(amplitude, 1), height * 0.45)
     frequency = min(max(frequency, 0.5), 8.0)
     layers = min(max(layers, 1), 3)
     opacity = min(max(opacity, 0.1), 1.0)
     speed = min(max(speed, 1.0), 20.0)
-    text_size = min(max(int(text_size), 8), 180)
-    text_bottom_size = min(max(int(text_bottom_size), 8), 180)
-    text_scale_x = min(max(float(text_scale_x), 50.0), 200.0)
-    text_scale_y = min(max(float(text_scale_y), 50.0), 200.0)
-    text_x = min(max(float(text_x), 0.0), 100.0)
-    text_y = min(max(float(text_y), 0.0), 100.0)
-    text_gap = min(max(float(text_gap), 0.0), 200.0)
+    text_size = min(max(text_size, 8), 180)
+    text_bottom_size = min(max(text_bottom_size, 8), 180)
+    text_scale_x = min(max(text_scale_x, 50.0), 200.0)
+    text_scale_y = min(max(text_scale_y, 50.0), 200.0)
+    text_x = min(max(text_x, 0.0), 100.0)
+    text_y = min(max(text_y, 0.0), 100.0)
+    text_gap = min(max(text_gap, 0.0), 200.0)
     text_align = text_align if text_align in ("start", "middle", "end") else "middle"
-    text_style = text_style if text_style in ("normal", "bold", "italic", "bold_italic") else "normal"
-    text_stroke_width = min(max(float(text_stroke_width), 0.0), 20.0)
+    # Normalize style aliases (bolditalic / bold-italic / bold_italic).
+    normalized_style = str(text_style or "normal").strip().lower().replace("-", "_")
+    if normalized_style in ("bolditalic", "bold_italic"):
+        text_style = "bold_italic"
+    elif normalized_style in ("normal", "bold", "italic"):
+        text_style = normalized_style
+    else:
+        text_style = "normal"
+    text_stroke_width = min(max(text_stroke_width, 0.0), 20.0)
     text = text.strip()
     text_bottom = text_bottom.strip()
 
@@ -287,7 +332,7 @@ def generate_wave_svg(
     else:
         fill_color = _esc(color_bottom)
 
-    paths_svg = ""
+    paths_svg = []
 
     for layer_idx in range(layers):
         frac = layer_idx / max(layers, 1)
@@ -410,7 +455,7 @@ def generate_wave_svg(
                     f'repeatCount="indefinite"/>'
                 )
 
-        paths_svg += (
+        paths_svg.append(
             f'  <path d="{path_d}" fill="{layer_color}" fill-opacity="{layer_opacity:.2f}">'
             f'{animation_svg}</path>\n'
         )
@@ -488,12 +533,12 @@ def generate_wave_svg(
                     f'values="0 0; {width * 0.03:.2f} 0; 0 0" dur="{speed + 1.5:.2f}s" '
                     f'repeatCount="indefinite"/>'
                 )
-        paths_svg += (
+        paths_svg.append(
             f'  <path d="{mirror_path}" fill="{fill_color}" fill-opacity="{opacity * 0.4:.2f}">'
             f'{mirror_anim}</path>\n'
         )
 
-    text_svg = ""
+    text_svg = []
     if text or text_bottom:
         font_weight = "700" if text_style in ("bold", "bold_italic") else "400"
         font_style = "italic" if text_style in ("italic", "bold_italic") else "normal"
@@ -503,7 +548,7 @@ def generate_wave_svg(
         scale_x = text_scale_x / 100
         scale_y = text_scale_y / 100
         if text:
-            text_svg += (
+            text_svg.append(
                 f'  <text x="0" y="0" transform="translate({text_pos_x:.2f} {text_pos_y:.2f}) scale({scale_x:.2f} {scale_y:.2f})" '
                 f'fill="{_esc(text_color)}" font-size="{text_size}" text-anchor="{text_align}" '
                 f'font-weight="{font_weight}" font-style="{font_style}" '
@@ -513,7 +558,7 @@ def generate_wave_svg(
                 f'{_esc(text)}</text>\n'
             )
         if text_bottom:
-            text_svg += (
+            text_svg.append(
                 f'  <text x="0" y="0" transform="translate({text_pos_x:.2f} {text_bottom_pos_y:.2f}) scale({scale_x:.2f} {scale_y:.2f})" '
                 f'fill="{_esc(text_bottom_color)}" font-size="{text_bottom_size}" text-anchor="{text_align}" '
                 f'font-weight="{font_weight}" font-style="{font_style}" '
@@ -529,6 +574,6 @@ def generate_wave_svg(
      role="img" aria-label="Wave divider">
 {defs}
   <g>
-{paths_svg}  </g>
-{text_svg}
+{"".join(paths_svg)}  </g>
+{"".join(text_svg)}
 </svg>"""
